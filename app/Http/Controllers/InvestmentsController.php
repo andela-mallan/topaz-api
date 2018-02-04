@@ -10,6 +10,14 @@ use App\Investment;
 class InvestmentsController extends Controller
 {
     /**
+     * Protect the routes that use this controller
+     */
+    public function __construct()
+    {
+        $this->middleware('jwt.auth');
+    }
+
+    /**
      * Get all investments
      *
      * @return object - investments objects
