@@ -12,6 +12,14 @@ use App\Member;
 class MembersController extends Controller
 {
     /**
+     * Protect the routes that use this controller
+     */
+    public function __construct()
+    {
+        $this->middleware('jwt.auth');
+    }
+
+    /**
      * Get all topaz members
      *
      * @return object - member objects

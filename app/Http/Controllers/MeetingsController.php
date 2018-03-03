@@ -12,6 +12,14 @@ use App\Meeting;
 class MeetingsController extends Controller
 {
     /**
+     * Protect the routes that use this controller
+     */
+    public function __construct()
+    {
+        $this->middleware('jwt.auth');
+    }
+
+    /**
      * Get all meetings past and future
      *
      * @return object - meetings objects

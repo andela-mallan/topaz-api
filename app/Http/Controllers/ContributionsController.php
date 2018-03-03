@@ -11,6 +11,13 @@ use App\Contribution;
 
 class ContributionsController extends Controller
 {
+    /**
+     * Protect the routes that use this controller
+     */
+    public function __construct()
+    {
+        $this->middleware('jwt.auth');
+    }
 
     /**
      * Get all contributions with their related members
@@ -114,6 +121,19 @@ class ContributionsController extends Controller
         } catch (ModelNotFoundException $exception) {
             throw new ModelNotFoundException('Member with id ' .$id. ' does not exist');
             return response('404 Error Occured', Response::HTTP_BAD_REQUEST);
+        }
+    }
+
+    /**
+     * Admin confirms contribution made by other members
+     *
+     * @param
+     * @return
+     */
+    public function confirmContribution()
+    {
+        if (Auth::guard('auth:admin')->attempt($credentials)) {
+            //
         }
     }
 }
