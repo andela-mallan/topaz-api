@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Input;
 
 use App\Member;
+use App\Http\Requests\MemberRequest;
 
 class MembersController extends Controller
 {
@@ -72,7 +73,7 @@ class MembersController extends Controller
      * @param Request|object $request - request payload
      * @return object - member object for registered member
      */
-    public function createMember(Request $request)
+    public function createMember(MemberRequest $request)
     {
         $newMemberData = [
           'name' => $request->input('name'),
