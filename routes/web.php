@@ -15,10 +15,10 @@
  * Routes for authentication
  */
 Route::prefix('api/v1/')->group(function () {
-    Route::post('register', 'RegisterController@register');
-    Route::post('login', 'LoginController@login');
-    Route::post('recover', 'ResetPasswordController@recover');
-    Route::post('logout', 'LoginController@logout')->middleware('jwt.auth');
+    Route::post('register', 'Auth\RegisterController@register');
+    Route::post('login', 'Auth\LoginController@login');
+    Route::post('recover', 'Auth\ResetPasswordController@recover');
+    Route::post('logout', 'Auth\LoginController@logout')->middleware('jwt.auth');
 });
 
 /**

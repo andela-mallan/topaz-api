@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 use App\Investment;
 
@@ -62,10 +63,11 @@ class InvestmentsController extends Controller
           'description' => $request->input('description'),
           'location' => $request->input('location'),
           'start_date' => $request->input('start_date'),
-          'expected_investment_value' => json_encode(
-              explode(',', $request->input('expected_investment_value')),
-              JSON_NUMERIC_CHECK
-          )
+          'in_progress' => $request->input('in_progress'),
+          'expected_investment_value' => json_encode(json_decode($request->input('expected_investment_value'), true)),
+          'total_investment_value' => json_encode(json_decode($request->input('total_investment_value'), true)),
+          'revenue' => json_encode(json_decode($request->input('revenue'), true)),
+          'profits' => json_encode(json_decode($request->input('profits'), true))
         ];
         $newInvestment = Investment::firstOrCreate($newInvestmentInfo);
         $response = ["data" => $newInvestment];
@@ -81,27 +83,40 @@ class InvestmentsController extends Controller
      */
     public function editInvestment(Request $request, $id)
     {
-        $updateInvestment = [];
-        if ($request->input('in_progress')) {
-            $in_progress = ['in_progress' => $request->input('in_progress')];
-            $updateInvestment = array_merge($updateInvestment, $in_progress);
-        } elseif ($request->input('expected_investment_value')) {
-            $expected_investment_value = ['expected_investment_value' => json_encode(explode(',', $request->input('expected_investment_value')), JSON_NUMERIC_CHECK)];
-            $updateInvestment = array_merge($updateInvestment, $expected_investment_value);
-        } elseif ($request->input('total_investment_value')) {
-            $total_investment_value = ['total_investment_value' => json_encode(explode(',', $request->input('total_investment_value')), JSON_NUMERIC_CHECK)];
-            $updateInvestment = array_merge($updateInvestment, $total_investment_value);
-        } elseif ($request->input('revenue')) {
-            $revenue = ['revenue' => json_encode(explode(',', $request->input('revenue')), JSON_NUMERIC_CHECK)];
-            $updateInvestment = array_merge($updateInvestment, $revenue);
-        } elseif ($request->input('profits')) {
-            $profits = ['profits' => json_encode(explode(',', $request->input('profits')), JSON_NUMERIC_CHECK)];
-            $updateInvestment = array_merge($updateInvestment, $profits);
-        }
-        $updatedInvestment = Investment::updateOrCreate(['id' => $id], $updateInvestment);
-        $response = ["data" => $updatedInvestment];
+        try {
+            $investment = Investment::findOrFail($id);
 
-        return response($response, Response::HTTP_OK);
+            $updateInvestmentInfo = [
+              'project_name' => $request->has('project_name') ?
+                  $request->input('project_name') : $investment->project_name,
+              'description' => $request->has('description') ?
+                  $request->input('description') : $investment->description,
+              'location' => $request->has('location') ?
+                  $request->input('location') : $investment->location,
+              'start_date' => $request->has('start_date') ?
+                  $request->input('start_date') : $investment->start_date,
+              'in_progress' => $request->has('in_progress') ?
+                  $request->input('in_progress') : $investment->in_progress,
+              'expected_investment_value' => $request->has('expected_investment_value') ?
+                  json_encode(json_decode($request->input('expected_investment_value'), true)) :
+                  $investment->expected_investment_value,
+              'total_investment_value' => $request->has('total_investment_value') ?
+                  json_encode(json_decode($request->input('total_investment_value'), true)) :
+                  $investment->total_investment_value,
+              'revenue' => $request->has('revenue') ?
+                  json_encode(json_decode($request->input('revenue'), true)) : $investment->revenue,
+              'profits' => $request->has('profits') ?
+                  json_encode(json_decode($request->input('profits'), true)) : $investment->profits
+            ];
+
+            $updatedInvestment = Investment::updateOrCreate(['id' => $id], $updateInvestmentInfo);
+            $response = ["data" => $updatedInvestment];
+
+            return response($response, Response::HTTP_OK);
+        } catch (ModelNotFoundException $exception) {
+            throw new ModelNotFoundException('Investment with id ' .$id. ' does not exist');
+            return response('404 Error Occured', Response::HTTP_BAD_REQUEST);
+        }
     }
 
     /**

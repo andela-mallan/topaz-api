@@ -61,8 +61,13 @@ class MeetingsController extends Controller
     {
         $newMeetingInfo = [
           'meeting_date' => $request->input('meeting_date'),
-          'location' => $request->input('location')
+          'attendants' => json_encode(json_decode($request->input('attendants'))),
+          'minutes' => $request->input('minutes'),
+          'operation_costs' => json_encode(json_decode($request->input('operation_costs'), true)),
+          'location' => $request->input('location'),
+          'months_objectives' => json_encode(json_decode($request->input('months_objectives'), true))
         ];
+
         $newMeeting = Meeting::firstOrCreate($newMeetingInfo);
         $response = ["data" => $newMeeting];
 
@@ -77,6 +82,34 @@ class MeetingsController extends Controller
      */
     public function editMonthlyMeeting(Request $request, $id)
     {
+        try {
+            $updateMeeting = Meeting::findOrFail($id);
+
+            $newMeetingInfo = [
+              'meeting_date' => $request->has('meeting_date') ?
+                  $request->input('meeting_date') : $updateMeeting->meeting_date,
+              'attendants' => $request->has('attendants') ?
+                  json_encode(json_decode($request->input('attendants'))) : $updateMeeting->attendants,
+              'minutes' => $request->has('minutes') ?
+                  $request->input('minutes') : $updateMeeting->minutes,
+              'operation_costs' => $request->has('operation_costs') ?
+                  json_encode(json_decode($request->input('operation_costs'), true)) : $updateMeeting->operation_costs,
+              'location' => $request->has('location') ?
+                  $request->input('location') : $updateMeeting->location,
+              'months_objectives' => $request->has('months_objectives') ?
+                  json_encode(json_decode($request->input('months_objectives'), true)) :
+                  $updateMeeting->months_objectives
+            ];
+
+            $updatedMeeting = Meeting::updateOrCreate(['id' => $id], $newMeetingInfo);
+            $response = ["data" => $updatedMeeting];
+
+            return response($response, Response::HTTP_OK);
+        } catch (ModelNotFoundException $exception) {
+            throw new ModelNotFoundException('Meeting with id ' .$id. ' does not exist');
+            return response('404 Error Occured', Response::HTTP_BAD_REQUEST);
+        }
+
         $updateMeeting = [];
         if ($request->input('attendants')) {
             $attendants = ['attendants' => json_encode(explode(',', $request->input('attendants')))];
