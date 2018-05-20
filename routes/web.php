@@ -15,10 +15,26 @@
  * Routes for authentication
  */
 Route::prefix('api/v1/')->group(function () {
-    Route::post('register', 'RegisterController@register');
-    Route::post('login', 'LoginController@login');
-    Route::post('recover', 'ResetPasswordController@recover');
-    Route::post('logout', 'LoginController@logout')->middleware('jwt.auth');
+    Route::post('register', 'Auth\RegisterController@register');
+    Route::post('login', 'Auth\LoginController@login');
+    Route::post('recover', 'Auth\ResetPasswordController@recover');
+    Route::post('logout', 'Auth\LoginController@logout')->middleware('jwt.auth');
+});
+
+/**
+ * Routes for creating and assigning roles
+ */
+Route::prefix('api/v1/')->group(function () {
+    Route::post('create-role', 'Auth\RoleController@createRole');
+    Route::post('assign-role', 'Auth\RoleController@assignRole');
+});
+
+/**
+ * Routes for creating and attaching permissions
+ */
+Route::prefix('api/v1/')->group(function () {
+    Route::post('create-permission', 'Auth\PermissionController@createPermission');
+    Route::post('attach-permission', 'Auth\PermissionController@attachPermission');
 });
 
 /**
@@ -54,8 +70,7 @@ Route::prefix('api/v1/')->group(function () {
       ->where(['name' => '[A-Za-z]+']);
     Route::post('contribution', 'ContributionsController@logMonthlyContribution');
     Route::patch('contribution/{id}/edit', 'ContributionsController@editMonthlyContribution');
-    Route::patch('contribution/confirm', 'ContributionsController@confirmContribution')
-      ->middleware('auth:admin');
+    Route::patch('contribution/{id}/verify', 'ContributionsController@verifyContribution');
     Route::delete('contribution/{id}', 'ContributionsController@deleteMonthlyContribution');
 });
 
