@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Input;
+use Illuminate\Support\Facades\Auth;
 
 use App\Contribution;
 
@@ -119,7 +120,7 @@ class ContributionsController extends Controller
 
             return response($response, Response::HTTP_NO_CONTENT);
         } catch (ModelNotFoundException $exception) {
-            throw new ModelNotFoundException('Member with id ' .$id. ' does not exist');
+            throw new ModelNotFoundException('Contribution with id ' .$id. ' does not exist');
             return response('404 Error Occured', Response::HTTP_BAD_REQUEST);
         }
     }
@@ -130,10 +131,21 @@ class ContributionsController extends Controller
      * @param
      * @return
      */
-    public function confirmContribution()
+    public function verifyContribution($id)
     {
-        if (Auth::guard('auth:admin')->attempt($credentials)) {
-            //
+        if (Auth::user()->hasRole('admin')) {
+            try {
+                $verifyContribution = Contribution::findorFail($id);
+                $verifyContribution->verified = true;
+                $verifyContribution->save();
+
+                return response("Verified", Response::HTTP_OK);
+            } catch (ModelNotFoundException $exception) {
+                throw new ModelNotFoundException('Contribution with id ' .$id. ' does not exist');
+                return response('404 Error Occured', Response::HTTP_BAD_REQUEST);
+            }
+        } else {
+            return response('403 Forbidden', Response::HTTP_FORBIDDEN);
         }
     }
 }
